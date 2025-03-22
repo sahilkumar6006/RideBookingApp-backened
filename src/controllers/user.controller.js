@@ -5,7 +5,6 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import mongoose from "mongoose";
 
 const generateAccessAndRefereshTokens = async(userId) => {
     try {
@@ -133,17 +132,17 @@ const loginUser = async (req, res) => {
 const completeProfile = asyncHandler(async (req, res) => {
     try {
         // Extract user ID from authentication
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            throw new ApiError(401, "Unauthorized: No token provided");
-        }
+        // const authHeader = req.headers.authorization;
+        // if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        //     throw new ApiError(401, "Unauthorized: No token provided");
+        // }
         
-        // Extract token
-        const token = authHeader.split(" ")[1];
+        // // Extract token
+        // const token = authHeader.split(" ")[1];
         
-        // Verify JWT
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded._id;
+        // // Verify JWT
+        // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // const userId = decoded._id;
 
         // Rest of your existing code...
         const { address, age, street, district, city, state, zipCode } = req.body;
