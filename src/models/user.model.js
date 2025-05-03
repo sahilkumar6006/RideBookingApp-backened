@@ -41,6 +41,18 @@ const userSchema = new mongoose.Schema({
     district: {
         type: String,
     },
+    city: {
+        type: String,
+    },
+    state: {
+        type: String,
+    },
+    zipCode: {
+        type: String,
+    },
+    age: {
+        type: Number,
+    },
     userType: {
         type: String,
         enum: ["RIDER", "DRIVER", "ADMIN"],

@@ -20,6 +20,10 @@ const locationSchema = new mongoose.Schema({
     state: String,
     country: String,
     pincode: String,
+    isFavourite: {
+        type: Boolean,
+        default: false
+    }
 });
 
 locationSchema.index({ coordinates: '2dsphere' });

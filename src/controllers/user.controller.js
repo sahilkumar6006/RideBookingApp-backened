@@ -145,7 +145,7 @@ const completeProfile = asyncHandler(async (req, res) => {
         // const userId = decoded._id;
 
         // Rest of your existing code...
-        const { address, age, street, district, city, state, zipCode } = req.body;
+        const { address, age, street, district, city, state, zipCode, fullName, phone } = req.body;
         
         let imageUrl;
         if (req.file) {
@@ -164,7 +164,9 @@ const completeProfile = asyncHandler(async (req, res) => {
             ...(district && { district }),
             ...(city && { city }),
             ...(state && { state }),
-            ...(zipCode && { zipCode })
+            ...(zipCode && { zipCode }),
+            ...(fullName && { fullName }),
+            ...(phone && { phone })
         };
 
         const updatedUser = await User.findByIdAndUpdate(
@@ -201,8 +203,19 @@ const updateProfile = asyncHandler(async (req, res) => {
         const userId = req.user._id;
 
         console.log(" req.body ID:",  req.body);
-        const { fullName, phone, address, age, street, district, city, state, zipCode } = req.body;
-        
+        // Extract all possible fields from request body
+        const updateFields = {
+            fullName: req.body.fullName,
+            phone: req.body.phone,
+            address: req.body.address,
+            age: req.body.age ? parseInt(req.body.age) : undefined,
+            street: req.body.street,
+            district: req.body.district,
+            city: req.body.city,
+            state: req.body.state,
+            zipCode: req.body.zipCode
+        };
+
         let imageUrl;
         if (req.file) {
             console.log("Received file for upload:", req.file);
@@ -213,6 +226,7 @@ const updateProfile = asyncHandler(async (req, res) => {
                 }
                 imageUrl = uploadResult.secure_url;
                 console.log("Profile image uploaded successfully:", imageUrl);
+                updateFields.profileImage = imageUrl; // Update the profileImage field with the Cloudinary URL
             } catch (error) {
                 console.error("Error uploading profile image:", error);
                 throw new ApiError(
@@ -221,19 +235,6 @@ const updateProfile = asyncHandler(async (req, res) => {
                 );
             }
         }
-
-        const updateFields = {
-            ...(imageUrl && { profileImage: imageUrl }),
-            ...(fullName && { fullName }),
-            ...(phone && { phone }),
-            ...(address && { address }),
-            ...(age && { age: Number(age) }),
-            ...(street && { street }),
-            ...(district && { district }),
-            ...(city && { city }),
-            ...(state && { state }),
-            ...(zipCode && { zipCode })
-        };
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
