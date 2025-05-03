@@ -191,47 +191,69 @@ const completeProfile = asyncHandler(async (req, res) => {
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        throw new ApiError(401, "Unauthorized: No token provided");
-    }
-
-    // Extract token
-    const token = authHeader.split(" ")[1];
-
     try {
-        // Verify JWT
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded._id;
+        console.log("Update profile controller hit");
+        console.log("Request body:", req.body);
+        console.log("Request file:", req.file);
+        console.log("Request user:", req.user);
 
-        // Check if user exists
-        const user = await User.findById(userId);
-        if (!user) {
+        // Get user ID from the request (authMiddleware already attaches it)
+        const userId = req.user._id;
+
+        console.log(" req.body ID:",  req.body);
+        const { fullName, phone, address, age, street, district, city, state, zipCode } = req.body;
+        
+        let imageUrl;
+        if (req.file) {
+            console.log("Received file for upload:", req.file);
+            try {
+                const uploadResult = await uploadOnCloudinary(req.file.path);
+                if (!uploadResult) {
+                    throw new Error("Cloudinary returned null response");
+                }
+                imageUrl = uploadResult.secure_url;
+                console.log("Profile image uploaded successfully:", imageUrl);
+            } catch (error) {
+                console.error("Error uploading profile image:", error);
+                throw new ApiError(
+                    500,
+                    `Failed to upload profile image: ${error.message}`
+                );
+            }
+        }
+
+        const updateFields = {
+            ...(imageUrl && { profileImage: imageUrl }),
+            ...(fullName && { fullName }),
+            ...(phone && { phone }),
+            ...(address && { address }),
+            ...(age && { age: Number(age) }),
+            ...(street && { street }),
+            ...(district && { district }),
+            ...(city && { city }),
+            ...(state && { state }),
+            ...(zipCode && { zipCode })
+        };
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        ).select("-password -refreshToken");
+
+        if (!updatedUser) {
             throw new ApiError(404, "User not found");
         }
 
-        // Get updated fields from request
-        const { fullName, phone, address } = req.body;
-        let imageUrl = user.profileImage; // Keep existing image if not updated
-
-        // Handle profile image upload
-        if (req.file) {
-            const uploadResult = await uploadOnCloudinary(req.file.path);
-            imageUrl = uploadResult.secure_url;
-        }
-
-        // Update user data
-        user.fullName = fullName || user.fullName;
-        user.phone = phone || user.phone;
-        user.address = address || user.address;
-        user.profileImage = imageUrl;
-
-        await user.save();
-
-        return res.status(200).json(new ApiResponse(200, user, "Profile updated successfully"));
+        return res.status(200).json(
+            new ApiResponse(200, updatedUser, "Profile updated successfully")
+        );
     } catch (error) {
-        throw new ApiError(401, "Invalid or expired token");
+        console.error("Update profile error:", error);
+        throw new ApiError(
+            error.statusCode || 500,
+            error.message || "Error while updating profile"
+        );
     }
 });
 

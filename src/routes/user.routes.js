@@ -5,7 +5,8 @@ import {
     completeProfile,
     forgotPassword,
     resetPassword,
-    logout
+    logout,
+    updateProfile
 } from "../controllers/user.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -20,11 +21,17 @@ router.route("/reset-password").post(resetPassword);
 router.route("/logout").post(authMiddleware, logout);
 
 // Profile routes
-// router.route("/complete-profile").post(, completeProfile);
 router.route("/complete-profile")
     .post(
         upload.single("profileImage"),
         completeProfile
+    );
+
+router.route("/update-profile")
+    .put(
+        authMiddleware,
+        upload.single("profileImage"),
+        updateProfile
     );
 
 export default router;
