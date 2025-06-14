@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import swaggerDocs from "./swagger/swagger-config.js"
 
 const app = express()
 
@@ -28,7 +29,9 @@ app.use("/api/v1/healthcheck", healthcheckRouter)
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/admin/vehicles", adminVehicleRouter)
 app.use("/api/v1/vehicles", vehicleRouter)
-app.use("/api/v1/locationapi", locationRouter)
-// http://localhost:8000/api/v1/healthcheck
+app.use("/api/v1/location", locationRouter)
+
+// Swagger documentation
+swaggerDocs(app);
 
 export { app }
